@@ -1,0 +1,14 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Logs / deps (none currently, but here if you add a build later)
+node_modules/
+npm-debug.log*
+dist/
+
+# Netlify local
+.netlify/
