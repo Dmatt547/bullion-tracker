@@ -1,8 +1,41 @@
 # Bullion Tracker
 
+![CI](https://github.com/Dmatt547/bullion-tracker/actions/workflows/ci.yml/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![Vanilla JS](https://img.shields.io/badge/JavaScript-ES%20Modules-f7df1e?logo=javascript&logoColor=000)
+![Firebase](https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-ffca28?logo=firebase&logoColor=000)
+
 A live gold & silver portfolio tracker (AUD) with Google sign-in, cross-device
 sync via Firebase, live spot prices, CSV import/export, inline editing, and
-charts.
+charts. Built with vanilla JavaScript ES modules — no framework, no build step.
+
+> Replace `Dmatt547` in the CI badge URL above with your GitHub username.
+
+## Screenshot
+
+<!-- After deploying, take a screenshot, save it as docs/screenshot.png, and it will show here -->
+![Bullion Tracker dashboard](docs/screenshot.png)
+
+## Features
+
+- **Live spot prices** — gold & silver pulled on load and on demand, converted to AUD.
+- **Google sign-in + cloud sync** — holdings and history follow you across devices (Firebase Auth + Firestore, real-time).
+- **Offline-friendly** — falls back to local storage and manually entered prices when APIs are unreachable.
+- **Cost basis & break-even** — blended average $/oz per metal and unrealised P/L.
+- **Charts** — allocation by metal, cost vs current value, and portfolio value over time.
+- **CSV import/export** — back up or bulk-edit your holdings.
+- **Inline editing** — edit or delete any holding in place.
+
+## Tech stack
+
+| Area      | Choice                                            |
+|-----------|---------------------------------------------------|
+| Frontend  | Vanilla JS (ES modules), HTML, CSS — no framework |
+| Charts    | Chart.js (CDN)                                    |
+| Auth/DB   | Firebase Authentication + Cloud Firestore         |
+| Data APIs | gold-api.com (metals), frankfurter.dev (FX)       |
+| Hosting   | Netlify (CI/CD from GitHub)                        |
+| CI        | GitHub Actions (JS syntax validation)             |
 
 ## File structure
 

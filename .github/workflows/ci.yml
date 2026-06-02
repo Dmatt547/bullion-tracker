@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate static site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Syntax-check JS modules
+        run: |
+          for f in js/*.js; do
+            echo "Checking $f"
+            cp "$f" "/tmp/$(basename "$f").mjs"
+            node --check "/tmp/$(basename "$f").mjs"
+          done
+
+      - name: Check referenced entry files exist
+        run: |
+          test -f index.html
+          test -f css/styles.css
+          test -f js/main.js
+          echo "All referenced entry files present."
