@@ -2,7 +2,7 @@
 import { S } from "./state.js";
 import { render } from "./ui.js";
 import { initFirebase, setRender } from "./firebase.js";
-import { fetchLive } from "./prices.js";
+import { fetchLive, startAutoRefresh } from "./prices.js";
 import { exportCSV, importCSV } from "./csv.js";
 
 // Let firebase trigger re-renders on remote sync without a circular import.
@@ -46,6 +46,7 @@ document.getElementById("importFile").onchange = e => {
   rd.readAsText(f);
 };
 
-// Initial paint + live prices
+// Initial paint + live prices, then auto-refresh every 5 minutes
 render();
 fetchLive();
+startAutoRefresh();

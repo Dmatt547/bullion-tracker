@@ -40,5 +40,31 @@ export async function fetchLive() {
       .map(x => x.reason && x.reason.message).join(" | ");
     console.error("Bullion price fetch failed:", errs || "(blocked by CORS/network)");
   }
+  S.spot.fetchedAt = Date.now();
   render();
+}
+
+// ---- Auto-refresh ----
+// Polls live prices on an interval. Pauses while the tab is hidden to avoid
+// wasted API calls, and refreshes immediately when the tab becomes visible
+// again if the data is older than the interval. The manual Refresh button
+// keeps working independently.
+const REFRESH_MS = 5 * 60 * 1000; // 5 minutes
+let timer = null;
+
+export function startAutoRefresh(intervalMs = REFRESH_MS) {
+  stopAutoRefresh();
+  timer = setInterval(() => {
+    if (!document.hidden) fetchLive();
+  }, intervalMs);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) return;
+    const age = Date.now() - (S.spot.fetchedAt || 0);
+    if (age >= intervalMs) fetchLive();
+  });
+}
+
+export function stopAutoRefresh() {
+  if (timer) { clearInterval(timer); timer = null; }
 }
