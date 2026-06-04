@@ -26,18 +26,23 @@ function applyDoc(d) {
   applyingRemote = true;
   if (Array.isArray(d.holdings)) S.holdings = d.holdings;
   if (Array.isArray(d.history))  S.history  = d.history;
+  lastSaved = JSON.stringify({ h: S.holdings, t: S.history });  // remote == in sync, don't re-save it
+  renderCb();              // re-render WHILE guarded so cloudSave() is suppressed
   applyingRemote = false;
-  renderCb();
 }
 
 // Debounced write to Firestore. Called from render() after any change.
+let lastSaved = null;      // snapshot of the last data we synced, to skip no-op writes
 export function cloudSave() {
   if (!user || applyingRemote) return;
+  const payload = JSON.stringify({ h: S.holdings, t: S.history });
+  if (payload === lastSaved) return;   // nothing actually changed — don't trigger a write/echo
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     try {
       await setDoc(doc(db, "trackers", user.uid),
         { holdings: S.holdings, history: S.history, updated: Date.now() }, { merge: true });
+      lastSaved = payload;
       setSync("✓ synced", "ok");
     } catch (e) { setSync("sync error", "err"); }
   }, 600);
