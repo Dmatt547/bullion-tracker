@@ -1,6 +1,9 @@
 // All DOM rendering: summary cards, holdings table (with inline edit),
 // cost-basis panel, and history snapshotting. render() is the single entry point.
-import { S, fmt, fmt0, pct, spotFor, saveLocal } from "./state.js";
+import { S, fmt, fmt0, pct, spotFor, saveLocal, toOz, fromOz } from "./state.js";
+
+// 4-dp rounding so the edit field doesn't show long float tails after conversion.
+const round4 = n => Math.round(n * 1e4) / 1e4;
 import { drawCharts } from "./charts.js";
 import { cloudSave } from "./firebase.js";
 
@@ -56,21 +59,24 @@ export function render() {
     basis[h.metal].wt += wt; basis[h.metal].cost += h.cost;
 
     if (i === S.editIdx) {
+      const u = h.unit || "oz";
+      const wDisp = round4(fromOz(h.weight, u));
       rows.insertAdjacentHTML("beforeend", "<tr>" +
         '<td><input class="editcell" id="eDate" type="date" value="' + h.date + '"></td>' +
         '<td><input class="editcell" id="eName" value="' + h.name.replace(/"/g, "&quot;") + '"></td>' +
         '<td><select class="editcell" id="eMetal"><option' + (h.metal === "Gold" ? " selected" : "") + '>Gold</option><option' + (h.metal === "Silver" ? " selected" : "") + '>Silver</option></select></td>' +
-        '<td><input class="editcell" id="eCount" type="number" step="0.01" value="' + h.count + '"></td><td>oz</td>' +
-        '<td><input class="editcell" id="eWeight" type="number" step="0.0001" value="' + h.weight + '"></td>' +
+        '<td><input class="editcell" id="eCount" type="number" step="0.01" value="' + h.count + '"></td>' +
+        '<td><select class="editcell" id="eUnit"><option value="oz"' + (u === "oz" ? " selected" : "") + '>oz</option><option value="g"' + (u === "g" ? " selected" : "") + '>g</option></select></td>' +
+        '<td><input class="editcell" id="eWeight" type="number" step="0.0001" value="' + wDisp + '"></td>' +
         '<td><input class="editcell" id="eCost" type="number" step="0.01" value="' + h.cost + '"></td>' +
-        '<td colspan="4" style="text-align:left;color:var(--muted)">Weight ea (oz) &amp; total cost in AUD</td>' +
+        '<td colspan="4" style="text-align:left;color:var(--muted)">Weight ea (in chosen unit) &amp; total cost in AUD</td>' +
         '<td style="white-space:nowrap"><button class="mini" id="saveEdit">Save</button> <button class="edit" id="cancelEdit">✕</button></td></tr>');
     } else {
       const cls = profit >= 0 ? "up" : "down";
       rows.insertAdjacentHTML("beforeend", "<tr>" +
         "<td>" + h.date + "</td><td>" + h.name + "</td>" +
         '<td><span class="metal"><span class="dot ' + (h.metal === "Gold" ? "g" : "s") + '"></span>' + h.metal + "</span></td>" +
-        "<td>" + h.count + "</td><td>oz</td><td>" + wt.toFixed(2) + "</td>" +
+        "<td>" + h.count + "</td><td>" + (h.unit || "oz") + "</td><td>" + wt.toFixed(2) + "</td>" +
         "<td>" + fmt(h.cost) + "</td><td>" + fmt(val) + "</td>" +
         '<td><span class="pill ' + cls + '">' + fmt(profit) + "</span></td>" +
         '<td><span class="pill ' + cls + '">' + pct(pc) + "</span></td>" +
@@ -116,7 +122,8 @@ function wireRowButtons() {
       h.name = document.getElementById("eName").value || "Unnamed";
       h.metal = document.getElementById("eMetal").value;
       h.count = +document.getElementById("eCount").value || 0;
-      h.weight = +document.getElementById("eWeight").value || 0;
+      h.unit = document.getElementById("eUnit").value;          // "oz" or "g"
+      h.weight = toOz(+document.getElementById("eWeight").value || 0, h.unit);  // back to oz
       h.cost = +document.getElementById("eCost").value || 0;
       S.editIdx = -1; render();
     };

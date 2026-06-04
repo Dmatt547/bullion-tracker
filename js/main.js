@@ -1,5 +1,5 @@
 // Entry point: wires DOM events, connects modules, and kicks off the first render.
-import { S } from "./state.js";
+import { S, toOz } from "./state.js";
 import { render } from "./ui.js";
 import { initFirebase, setRender } from "./firebase.js";
 import { fetchLive, startAutoRefresh } from "./prices.js";
@@ -22,12 +22,15 @@ document.getElementById("refreshBtn").onclick = fetchLive;
 
 // Add a new holding
 document.getElementById("addBtn").onclick = () => {
+  const unit = document.getElementById("aUnit").value;          // "oz" or "g"
+  const wIn  = +document.getElementById("aWeight").value || 0;  // value in chosen unit
   S.holdings.push({
     date: document.getElementById("aDate").value || new Date().toISOString().slice(0, 10),
     name: document.getElementById("aName").value || "Unnamed",
     metal: document.getElementById("aMetal").value,
     count: +document.getElementById("aCount").value || 0,
-    weight: +document.getElementById("aWeight").value || 0,
+    weight: toOz(wIn, unit),   // stored canonically in troy oz
+    unit,                      // remembered for display/edit
     cost: +document.getElementById("aCost").value || 0
   });
   document.getElementById("aName").value = "";

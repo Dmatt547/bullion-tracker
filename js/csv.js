@@ -3,9 +3,9 @@ import { S } from "./state.js";
 import { render } from "./ui.js";
 
 export function exportCSV() {
-  const head = ["date", "name", "metal", "count", "weight_oz_each", "cost_aud"];
+  const head = ["date", "name", "metal", "count", "weight_oz_each", "cost_aud", "unit"];
   const lines = [head.join(",")].concat(S.holdings.map(h =>
-    [h.date, '"' + (h.name || "").replace(/"/g, '""') + '"', h.metal, h.count, h.weight, h.cost].join(",")));
+    [h.date, '"' + (h.name || "").replace(/"/g, '""') + '"', h.metal, h.count, h.weight, h.cost, h.unit || "oz"].join(",")));
   const blob = new Blob([lines.join("\n")], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -45,9 +45,10 @@ export function importCSV(text) {
   for (let k = start; k < rows.length; k++) {
     const r = rows[k];
     const metal = /silver/i.test(r[2]) ? "Silver" : "Gold";
+    const unit = /^\s*g\s*$/i.test(r[6] || "") ? "g" : "oz";  // optional column; weight stays oz
     imported.push({
       date: r[0].trim(), name: r[1].trim() || "Unnamed", metal,
-      count: +r[3] || 0, weight: +r[4] || 0, cost: +r[5] || 0
+      count: +r[3] || 0, weight: +r[4] || 0, cost: +r[5] || 0, unit
     });
   }
   if (!imported.length) { alert("Couldn't parse any holdings."); return; }

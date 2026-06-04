@@ -30,6 +30,15 @@ export function saveLocal() {
   localStorage.setItem("bt_history", JSON.stringify(S.history));
 }
 
+// ---- weight units ----
+// Internally, `weight` is ALWAYS stored in troy ounces (spot prices are AUD/oz),
+// so all value math stays consistent. The per-holding `unit` field only records
+// how the user entered it, for display + edit. Conversions happen behind the scenes.
+export const GRAMS_PER_OZ = 31.1034768;          // 1 troy ounce
+export const UNITS = ["oz", "g"];
+export const toOz   = (val, unit) => unit === "g" ? val / GRAMS_PER_OZ : val;   // entered -> oz
+export const fromOz = (oz,  unit) => unit === "g" ? oz  * GRAMS_PER_OZ : oz;    // oz -> display unit
+
 // ---- formatting helpers ----
 export const fmt  = n => "$" + n.toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const fmt0 = n => "$" + n.toLocaleString("en-AU", { maximumFractionDigits: 0 });
