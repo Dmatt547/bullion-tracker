@@ -5,7 +5,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChang
 import { getFirestore, doc, getDoc, setDoc, onSnapshot }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./config.js";
-import { S } from "./state.js";
+import { S, DEFAULT_HOLDINGS } from "./state.js";
 
 export const FB_READY = firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY";
 
@@ -66,6 +66,14 @@ async function bindUser(u) {
     btn.textContent = "Sign in";
     setSync("");
     if (unsub) { unsub(); unsub = null; }
+    // Clear the signed-in user's data so it isn't shown after sign-out.
+    applyingRemote = true;               // stop cloudSave echoing during reset
+    S.holdings = DEFAULT_HOLDINGS.map(h => ({ ...h }));
+    S.history = [];
+    applyingRemote = false;
+    localStorage.removeItem("bt_holdings");
+    localStorage.removeItem("bt_history");
+    renderCb();
   }
 }
 
